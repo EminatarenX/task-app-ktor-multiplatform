@@ -30,6 +30,7 @@ import org.example.project.model.LoginResponse
 import org.example.project.model.UpdateTaskRequest
 import org.example.project.model.UpdateTaskStatusRequest
 import org.example.project.storage.TokenStorage
+import org.example.project.utils.baseUrl
 
 
 class KtorClient {
@@ -57,7 +58,7 @@ class KtorClient {
         }
     }
     private var userEmail: String? = null
-    private val baseUrl = "http://10.0.2.2:3000"
+    private val apiUrl = baseUrl
     companion object {
         private var token: String? = null
         private var userEmail: String? = null
@@ -105,7 +106,7 @@ class KtorClient {
 
     suspend fun login(email: String, password: String): ApiResult<LoginResponse> {
         return try {
-            val response = client.post("$baseUrl/auth/login") {
+            val response = client.post("$apiUrl/auth/login") {
                 setBody(LoginRequest(email, password))
             }.body<LoginResponse>()
             saveUserEmail(response.email)
@@ -120,7 +121,7 @@ class KtorClient {
     suspend fun getTasks(): ApiResult<List<Task>> {
         return try {
             val currentToken = getCurrentToken()
-            val response = client.get("$baseUrl/tasks") {
+            val response = client.get("$apiUrl/tasks") {
                 header(HttpHeaders.Authorization, "Bearer $currentToken")
             }.body<List<Task>>()
             ApiResult.Success(response)
@@ -136,7 +137,7 @@ class KtorClient {
             val request = CreateTaskRequest(name, description, false)
             println("Request creado: $request")
 
-            val response = client.post("$baseUrl/tasks") {
+            val response = client.post("$apiUrl/tasks") {
                 header(HttpHeaders.Authorization, "Bearer $currentToken")
                 setBody(request)
             }
@@ -163,7 +164,7 @@ class KtorClient {
     suspend fun updateTask(id: Int, name: String, description: String): ApiResult<Task> {
         return try {
             val currenToken = getCurrentToken()
-            val response = client.patch("$baseUrl/tasks/$id") {
+            val response = client.patch("$apiUrl/tasks/$id") {
                 header(HttpHeaders.Authorization, "Bearer $currenToken")
                 setBody(UpdateTaskRequest(name, description))
             }.body<Task>()
@@ -176,7 +177,7 @@ class KtorClient {
     suspend fun updateTaskStatus(id: Int, completed: Boolean): ApiResult<Task> {
         return try {
             val currentToken = getCurrentToken()
-            val response = client.patch("$baseUrl/tasks/$id") {
+            val response = client.patch("$apiUrl/tasks/$id") {
                 header(HttpHeaders.Authorization, "Bearer $currentToken")
                 setBody(UpdateTaskStatusRequest(completed))
             }.body<Task>()
@@ -189,7 +190,7 @@ class KtorClient {
     suspend fun deleteTask(id: Int): ApiResult<Task> {
         return try {
             val currentToken = getCurrentToken()
-            val response = client.delete("$baseUrl/tasks/$id") {
+            val response = client.delete("$apiUrl/tasks/$id") {
                 header(HttpHeaders.Authorization, "Bearer $currentToken")
             }.body<Task>()
             ApiResult.Success(response)
